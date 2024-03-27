@@ -28,6 +28,9 @@ const StyledNavLink = styled(NavLink)`
         background-color: var(--color-grey-50);
         border-radius: var(--border-radius-sm);
     }
+    &.active svg {
+        color: var(--color-indigo-700);
+    }
 `
 
 function MainNav() {
