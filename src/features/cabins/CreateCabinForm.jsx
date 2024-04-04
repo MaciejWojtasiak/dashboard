@@ -9,15 +9,20 @@ import Textarea from "../../ui/Textarea";
 import FormRow from "../../ui/FormRow";
 
 import { useForm } from "react-hook-form";
-import { createCabin } from "../../services/apiCabins";
+import { createEditCabin } from "../../services/apiCabins";
 
-function CreateCabinForm() {
-    const { register, handleSubmit, reset , getValues, formState} = useForm();
+function CreateCabinForm({cabinToEdit = {}}) {
+    const {id:editId, ...editValues} = cabinToEdit;
+    const isEditSession = Boolean(editId);
+
+    const { register, handleSubmit, reset , getValues, formState} = useForm({
+        defaultValues: isEditSession ? editValues : {},
+    });
     const {errors} = formState;
     const queryClient = useQueryClient();
 
-    const {isLoading:isCreating, mutate} = useMutation({
-        mutationFn:(cabin)=>createCabin(cabin),
+    const {isLoading:isCreating, mutate:createCabin} = useMutation({
+        mutationFn:(cabin)=>createEditCabin(cabin),
         onSuccess:()=>{
             toast.success('Cabin added successfully.'),
             queryClient.invalidateQueries({
@@ -28,11 +33,32 @@ function CreateCabinForm() {
         onError:(err)=>{
             toast.error(err.message)
         }
-    })
+    });
 
+    const {isLoading:isEditing, mutate:editCabin} = useMutation({
+        mutationFn:({cabinData, id})=>createEditCabin(cabinData, id),
+        onSuccess:()=>{
+            toast.success('Cabin edited successfully.'),
+            queryClient.invalidateQueries({
+                queryKey:'cabins'
+            });
+            reset();
+        },
+        onError:(err)=>{
+            toast.error(err.message)
+        }
+    });
+
+    const isWorking = isCreating || isEditing;
 
     function onSubmit(data){
-        mutate({...data, image:data.image[0]});
+        const image = typeof data.image === 'string' ? data.image : data.image[0];
+
+        if(isEditSession){
+            editCabin({cabinData:{...data, image},id:editId});
+        } else {
+            createCabin({...data, image:image})
+        }
     }
 
  
@@ -81,12 +107,14 @@ function CreateCabinForm() {
             </FormRow>
 
             <FormRow label="Cabin photo">
-                <FileInput id="image" accept="image/*" {...register('image')}/>
+                <FileInput id="image" accept="image/*" {...register('image',{
+                    required:isEditSession ? false : 'This field is required'
+                })}/>
             </FormRow>
 
             <FormRow>
                 <Button variation="secondary" type="reset">Cancel</Button>
-                <Button disabled={isCreating}>Add cabin</Button>
+                <Button disabled={isWorking}>{isEditSession ? 'Edit cabin' : 'Add cabin'}</Button>
             </FormRow>
         </Form>
     )
