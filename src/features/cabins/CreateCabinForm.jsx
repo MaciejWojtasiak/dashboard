@@ -11,7 +11,7 @@ import FormRow from "../../ui/FormRow";
 import { useForm } from "react-hook-form";
 import { createEditCabin } from "../../services/apiCabins";
 
-function CreateCabinForm({cabinToEdit = {}}) {
+function CreateCabinForm({cabinToEdit = {},closeForm}) {
     const {id:editId, ...editValues} = cabinToEdit;
     const isEditSession = Boolean(editId);
 
@@ -43,6 +43,7 @@ function CreateCabinForm({cabinToEdit = {}}) {
                 queryKey:'cabins'
             });
             reset();
+            closeForm();
         },
         onError:(err)=>{
             toast.error(err.message)
@@ -55,7 +56,7 @@ function CreateCabinForm({cabinToEdit = {}}) {
         const image = typeof data.image === 'string' ? data.image : data.image[0];
 
         if(isEditSession){
-            editCabin({cabinData:{...data, image},id:editId});
+            editCabin({cabinData:{...data, image},id:editId});          
         } else {
             createCabin({...data, image:image})
         }
