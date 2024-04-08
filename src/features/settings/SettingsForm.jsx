@@ -1,51 +1,67 @@
 import {  useQuery } from '@tanstack/react-query';
 import { getSettings } from '../../services/apiSettings';
-import { useForm } from "react-hook-form";
+
+import { useEditSettings } from './useEditSettings';
 
 import Form from "../../ui/Form";
 import FormRow from "../../ui/FormRow";
 import Input from "../../ui/Input";
 import Loader from '../../ui/Loader';
 
-function SettingsForm(formData={}) {
-    const {isLoading, data} = useQuery({
+function SettingsForm() {
+    const {isLoading, data={}} = useQuery({
         queryKey:['settings'],
         queryFn:getSettings
     });
 
-    const { register, handleSubmit, getValues, reset, formState} = useForm({
-        defaultValues:data ? data: formData,
-    });
+    const {minBookingLength, maxBookingLength,maxGuestsPerBooking,breakfastPrice} = data;
 
-    const {errors} = formState;    
+    const {isEdditing, editSettings} = useEditSettings();  
+
+    const handleBlur = (e, field) =>{
+        const {value} = e.target;
+        editSettings({[field]:value})
+    }
 
     if(isLoading) return <Loader />;
 
   return (
     <Form>
-        <FormRow label="Minium booking length" error={errors?.name?.message}>
-            <Input type="number" id="minBookingLength" 
-                    {...register('minBookingLength',{
-                    required:"This field is required."
-                })} />
+        <FormRow label="Minium booking length">
+            <Input 
+            type="number" 
+            id="minBookingLength" 
+            disabled={isEdditing}
+            defaultValue={minBookingLength} 
+            onBlur={e=>handleBlur(e,'minBookingLength')}
+            />
         </FormRow>
-        <FormRow label="Maximum booking length" error={errors?.name?.message}>
-            <Input type="number" id="maxBookingLength" 
-                    {...register('maxBookingLength',{
-                    required:"This field is required."
-                })} />
+        <FormRow label="Maximum booking length">
+            <Input 
+            type="number" 
+            id="maxBookingLength" 
+            disabled={isEdditing} 
+            defaultValue={maxBookingLength} 
+            onBlur={e=>handleBlur(e,'maxBookingLength')}
+            />
         </FormRow>
-        <FormRow label="Maximum quests number" error={errors?.name?.message}>
-            <Input type="number" id="maxGuestsPerBooking" 
-                    {...register('maxGuestsPerBooking',{
-                    required:"This field is required."
-                })} />
+        <FormRow label="Maximum quests number">
+            <Input 
+            type="number" 
+            id="maxGuestsPerBooking"
+            disabled={isEdditing} 
+            defaultValue={maxGuestsPerBooking} 
+            onBlur={e=>handleBlur(e,'maxGuestsPerBooking')}
+            />
         </FormRow>
-        <FormRow label="Breakfast price" error={errors?.name?.message}>
-            <Input type="number" id="breakfastPrice" 
-                    {...register('breakfastPrice',{
-                    required:"This field is required."
-                })} />
+        <FormRow label="Breakfast price" >
+            <Input 
+            type="number" 
+            id="breakfastPrice" 
+            disabled={isEdditing}
+            defaultValue={breakfastPrice} 
+            onBlur={e=>handleBlur(e,'breakfastPrice')}
+            />
         </FormRow>
     </Form>
   )
