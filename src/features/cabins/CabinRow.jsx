@@ -3,6 +3,8 @@ import {formatPrice} from '../../utils/formatPrice';
 import { useState } from "react";
 import CreateCabinForm from "./CreateCabinForm";
 import { useDeleteCabin } from "./useDeleteCabin";
+import { HiPencil, HiTrash } from 'react-icons/hi2'
+
 
 const TableRow = styled.div`
     display: grid;
@@ -41,7 +43,11 @@ const Discount = styled.div`
     font-family: "Sono";
     color:var(--color-green-700);
 `
-
+const Options = styled.div`
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`
 
 function CabinRow({cabin}) {
   const [showForm, setShowForm] = useState(false);
@@ -59,10 +65,10 @@ function CabinRow({cabin}) {
         <div>Fits up to {maxCapacity} guests</div>
         <Price>{formatPrice(regularPrice)}</Price>
         {discount ? <Discount>{formatPrice(discount)}</Discount> : <span>&mdash;</span>}        
-        <div>
-            <button onClick={()=>setShowForm(state=>!state)}>Edit</button>
-            <button onClick={()=>deleteCabin(cabinId)} disabled={isDeleting}>Delete</button>
-        </div>
+        <Options>
+            <button onClick={()=>setShowForm(state=>!state)}><HiPencil/></button>
+            <button onClick={()=>deleteCabin(cabinId)} disabled={isDeleting}><HiTrash/></button>
+        </Options>
     </TableRow>
     {showForm && <CreateCabinForm cabinToEdit={cabin} closeForm={closeForm}/>}
     </>
